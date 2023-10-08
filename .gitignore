@@ -1,0 +1,6 @@
+__pycache__
+notebook/batch_images
+/pretrained_models
+output.csv
+/mmsegmentation
+/runs

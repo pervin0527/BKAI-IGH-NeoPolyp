@@ -1,0 +1,4 @@
+## pip3 install -r requirements.txt
+
+mmcv-full==1.7.0
+mmsegmentation==0.30.0
