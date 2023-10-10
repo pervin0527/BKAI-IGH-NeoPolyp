@@ -4,13 +4,15 @@ save_dir: "./runs"
 train: "train"
 valid: "valid"
 test: "test"
-weight_dir: ""
+weight_dir: "/home/pervinco/mmsegmentation/BKAI-IGH-NeoPolyp/runs/2023-10-10_19-09-34/weights/best_dice_ckpt_ep_84.pth"
+
+model: "segformer"
 
 ## hyp-params
 num_classes: 3
 epochs: 100
 img_size: 384
-batch_size: 16
+batch_size: 8
 init_lr: 0.0001
 gamma: 2
 
