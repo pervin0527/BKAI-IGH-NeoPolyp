@@ -4,13 +4,7 @@ save_dir: "./runs"
 train: "train"
 valid: "valid"
 test: "test"
-<<<<<<< HEAD
 weight_dir: "/home/pervinco/BKAI-IGH-NeoPolyp/runs/858/weights/best_dice_ckpt_ep_93.pth"
-=======
-weight_dir: "/home/pervinco/mmsegmentation/BKAI-IGH-NeoPolyp/runs/2023-10-10_19-09-34/weights/best_dice_ckpt_ep_84.pth"
-
-model: "segformer"
->>>>>>> e0d44c7e27da0ff293b0125ccc9fbc1ec7ea7520
 
 ## hyp-params
 num_classes: 3
