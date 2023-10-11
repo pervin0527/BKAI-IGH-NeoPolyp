@@ -11,7 +11,7 @@ from datetime import datetime
 from torch.utils.data import DataLoader
 from mmseg.models import build_segmentor
 
-from model_confing import model_cfg
+from model_confing import get_model_cfg
 from data.BKAIDataset import BKAIDataset
 from metrics.loss import FocalLoss_Ori
 from utils import save_config_to_yaml
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     total_steps = len(train_dataloader)
 
     ## Model
-    model = build_segmentor(model_cfg).to(device)
+    model = build_segmentor(get_model_cfg(config)).to(device)
     model.init_weights()
     os.system("clear")
 
@@ -98,7 +98,7 @@ if __name__ == "__main__":
             mIoU = torch.mean(iou_class[1:]) #mean iou class 1 and class 2
             mDice = torch.mean(dice_class[1:]) #mean dice class 1 and class 2
 
-        print(f"EP : {ep}, current_lr = {scheduler.get_last_lr()}, train_loss = {train_loss_meter.avg}, IoU = {mIoU}, dice = {mDice} \n")
+        print(f"EP : {ep}, current_lr = {scheduler.get_last_lr()}, train_loss = {train_loss_meter.avg:.4f}, IoU = {mIoU:.4f}, dice = {mDice:.4f} \n")
 
         # if ep >= 40:
         #     torch.save(model.state_dict(), f"{save_path}/weights/ckpt_ep_{ep}.pth")

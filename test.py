@@ -14,7 +14,7 @@ from glob import glob
 from mmseg.models import build_segmentor
 from albumentations.pytorch import ToTensorV2
 
-from model_confing import model_cfg
+from model_confing import get_model_cfg
 from utils import mask_to_rgb, color_dict
 
 
@@ -118,7 +118,7 @@ if __name__ == "__main__":
         config = yaml.safe_load(f)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = build_segmentor(model_cfg).to(device)
+    model = build_segmentor(get_model_cfg(config)).to(device)
     model.load_state_dict(torch.load(config["weight_dir"]), strict=False)
     result_dir = evaluate(config, model)
 
