@@ -4,7 +4,7 @@ save_dir: "./runs"
 train: "train"
 valid: "valid"
 test: "test"
-weight_dir: ""
+weight_dir: "/home/pervinco/BKAI-IGH-NeoPolyp/runs/858/weights/best_dice_ckpt_ep_93.pth"
 
 ## hyp-params
 num_classes: 3
