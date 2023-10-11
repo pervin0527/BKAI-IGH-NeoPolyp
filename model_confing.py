@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #model settings
 norm_cfg = dict(type='BN', requires_grad=True)
 model_cfg = dict(
@@ -32,7 +31,6 @@ model_cfg = dict(
     
     train_cfg=dict(),
     test_cfg=dict(mode='whole'))
-=======
 def get_model_cfg(config):
     if config["model"].lower() == "segformer":
         norm_cfg = dict(type='BN', requires_grad=True)
@@ -224,4 +222,3 @@ def get_model_cfg(config):
 
         
     return model_cfg
->>>>>>> e0d44c7e27da0ff293b0125ccc9fbc1ec7ea7520
