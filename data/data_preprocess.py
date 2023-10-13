@@ -49,6 +49,15 @@ def encode_mask(mask):
     return full_mask
 
 
+def decode_mask(pred_mask):
+        decoded_mask = np.zeros((pred_mask.shape[0], pred_mask.shape[1], 3), dtype=np.uint8)
+        decoded_mask[pred_mask == 0] = [0, 0, 0]
+        decoded_mask[pred_mask == 1] = [0, 255, 0] ## Green
+        decoded_mask[pred_mask == 2] = [255, 0, 0] ## Red
+        
+        return decoded_mask
+
+
 def train_img_mask_transform(transform, image, mask): 
     x, y = copy.deepcopy(image), copy.deepcopy(mask)
     transformed = transform(image=x, mask=y)
