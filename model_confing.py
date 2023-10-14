@@ -19,7 +19,7 @@ def get_model_cfg(config):
                 drop_rate=0.0,
                 attn_drop_rate=0.0,
                 drop_path_rate=0.,
-                init_cfg = dict(type="Pretrained", checkpoint="/home/pervinco/BKAI-IGH-NeoPolyp/runs/858/weights/best_dice_ckpt_ep_93.pth")), ## "./pretrained_models/mit_b4_mmseg.pth"
+                init_cfg = dict(type="Pretrained", checkpoint="./pretrained_models/mit_b4_mmseg.pth")),
             decode_head=dict(
                 type='SegformerHead',
                 in_channels=[64, 128, 320, 512],
