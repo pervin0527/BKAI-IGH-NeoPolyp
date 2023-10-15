@@ -2,6 +2,7 @@ import cv2
 import copy
 import random
 import numpy as np
+import albumentations as A
 
 def load_img_mask(image_path, mask_path, size=256, only_img=False):
     if only_img:
@@ -166,3 +167,21 @@ def spatially_exclusive_pasting(image, mask, alpha=0.7, iterations=10):
         M = cv2.filter2D(M, -1, kernel)
 
     return target_image, target_mask
+
+
+def mixup(foreground_image, background_image, alpha):
+    image1, image2 = copy.deepcopy(foreground_image), copy.deepcopy(background_image)
+
+    height, width = image1.shape[:2]
+    background_transform = A.Compose([A.RandomRotate90(p=0.5),
+                                      A.VerticalFlip(p=0.3),
+                                      A.HorizontalFlip(p=0.3),
+                                      A.RandomBrightnessContrast(p=0.6),
+                                      A.Resize(height=height, width=width, p=1)])
+    
+    transformed = background_transform(image=image2)
+    transformed_image = transformed["image"]
+
+    mixed_image = cv2.addWeighted(image1, alpha, transformed_image, 1 - alpha, 0)   
+    
+    return mixed_image

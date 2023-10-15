@@ -92,8 +92,6 @@ def evaluate(config, model):
         ori_w, ori_h = ori_img.shape[0], ori_img.shape[1]
         img = cv2.resize(ori_img, (config["img_size"], config["img_size"]))
 
-        batch_transform = A.Compose([A.Normalize(mean=(0.485, 0.456, 0.406),std=(0.229, 0.224, 0.225)),
-                                     ToTensorV2()])
         transformed = batch_transform(image=img)
         input_img = transformed["image"]
         input_img = input_img.unsqueeze(0).to(device)
@@ -102,12 +100,8 @@ def evaluate(config, model):
             output_mask = model.forward_dummy(input_img).squeeze(0).cpu().numpy().transpose(1,2,0)
             mask = cv2.resize(output_mask, (ori_h, ori_w))
             mask = np.argmax(mask, axis=-1)
-            new_rgb_mask = np.zeros((*mask.shape, 3)).astype(np.uint8)
+            
             mask_rgb = mask_to_rgb(mask, color_dict)
-            mask_rgb_true = cv2.cvtColor(mask_rgb, cv2.COLOR_BGR2RGB)
-            overlap = 0.7*ori_img+0.3*mask_rgb_true
-            overlap = overlap.astype('uint8')
-            overlap = cv2.cvtColor(overlap, cv2.COLOR_RGB2BGR)
             cv2.imwrite(f"{save_dir}/test_result/{file_name}.jpeg", mask_rgb)
 
     return f"{save_dir}/test_result"
@@ -116,6 +110,9 @@ def evaluate(config, model):
 if __name__ == "__main__":
     with open("config.yaml", "r") as f:
         config = yaml.safe_load(f)
+
+    batch_transform = A.Compose([A.Normalize(mean=(0.485, 0.456, 0.406),std=(0.229, 0.224, 0.225)),
+                                 ToTensorV2()])
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = build_segmentor(get_model_cfg(config)).to(device)

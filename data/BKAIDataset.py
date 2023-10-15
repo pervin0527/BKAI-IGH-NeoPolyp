@@ -8,7 +8,7 @@ from glob import glob
 from torch.utils.data import Dataset
 from albumentations.pytorch import ToTensorV2
 
-from data.data_preprocess import load_img_mask, encode_mask, train_img_mask_transform, mosaic_augmentation, spatially_exclusive_pasting
+from data.data_preprocess import load_img_mask, encode_mask, train_img_mask_transform, mosaic_augmentation, spatially_exclusive_pasting, mixup
 
 class BKAIDataset(Dataset):
     def __init__(self, config):
@@ -37,6 +37,9 @@ class BKAIDataset(Dataset):
         
         self.batch_transform = A.Compose([A.Normalize(mean=(0.485, 0.456, 0.406),std=(0.229, 0.224, 0.225)),
                                           ToTensorV2()])
+        
+        self.background_dir = config["background_dir"]
+        self.background_files = sorted(glob(f"{self.background_dir}/*"))
 
     def __len__(self):
         return len(self.total_files)
@@ -67,6 +70,12 @@ class BKAIDataset(Dataset):
             image_path, mask_path = self.total_files[index]
             image, mask = load_img_mask(image_path, mask_path, size=self.img_size)
             augment_image, augment_mask = spatially_exclusive_pasting(image, mask, alpha=random.uniform(self.spatial_alpha, self.spatial_alpha + 0.2))
+
+        if random.random() > 0.7:
+            bg_idx = random.randint(0, len(self.background_files) - 1)
+            background_image = cv2.imread(self.background_files[bg_idx])
+            background_image = cv2.cvtColor(background_image, cv2.COLOR_BGR2RGB)
+            augment_image = mixup(augment_image, background_image, 0.75)
 
         encoded_mask = encode_mask(augment_mask)
         batch_image, batch_mask = train_img_mask_transform(self.batch_transform, augment_image, encoded_mask)
