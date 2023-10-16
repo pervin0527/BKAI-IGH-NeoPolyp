@@ -14,9 +14,11 @@ epochs: 300
 img_size: 512
 batch_size: 8
 init_lr: 0.0001
+early_stop: 30
 
 alpha: null ## [0.006248079459464449, 0.867032189947176, 0.12671973059335967]
 gamma: 2
 
 ## augmentation
 spatial_alpha: 0.45 ## 0.45
+mixup_alpha: 0.6

@@ -15,6 +15,7 @@ class BKAIDataset(Dataset):
         self.data_dir = config["data_dir"]
         self.img_size = config["img_size"]
         self.spatial_alpha = config["spatial_alpha"]
+        self.mixup_alpha = config["mixup_alpha"]
 
         self.image_dir = f"{self.data_dir}/train"
         self.mask_dir = f"{self.data_dir}/train_gt"
@@ -75,7 +76,7 @@ class BKAIDataset(Dataset):
             bg_idx = random.randint(0, len(self.background_files) - 1)
             background_image = cv2.imread(self.background_files[bg_idx])
             background_image = cv2.cvtColor(background_image, cv2.COLOR_BGR2RGB)
-            augment_image = mixup(augment_image, background_image, 0.75)
+            augment_image = mixup(augment_image, background_image, alpha=random.uniform(self.mixup_alpha, self.mixup_alpha + 0.2))
 
         encoded_mask = encode_mask(augment_mask)
         batch_image, batch_mask = train_img_mask_transform(self.batch_transform, augment_image, encoded_mask)

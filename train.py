@@ -100,9 +100,14 @@ if __name__ == "__main__":
 
         print(f"EP : {ep}, current_lr = {scheduler.get_last_lr()}, train_loss = {train_loss_meter.avg:.4f}, IoU = {mIoU:.4f}, dice = {mDice:.4f} \n")
 
-        # if ep >= 40:
-        #     torch.save(model.state_dict(), f"{save_path}/weights/ckpt_ep_{ep}.pth")
-
         if mDice > max_dice:
             max_dice = mDice
+            early_stopping_counter = 0
             torch.save(model.state_dict(), f"{save_path}/weights/best_dice_ckpt_ep_{ep}.pth")
+        else:
+            early_stopping_counter += 1
+
+        # Check for early stopping
+        if early_stopping_counter >= config["early_stop"]:
+            print("Early stopping triggered")
+            break
