@@ -32,7 +32,7 @@ def get_model_cfg(config):
                 loss_decode=dict(type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
             train_cfg=dict())
         
-    elif config["model"].lower() == "swin_transformer_384":
+    elif config["model"].lower() == "swin_transformer":
         norm_cfg = dict(type='BN', requires_grad=True)
         backbone_norm_cfg = dict(type='LN', requires_grad=True)
         checkpoint_file = 'https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/swin/swin_large_patch4_window12_384_22k_20220412-6580f57d.pth'  # noqa
@@ -65,29 +65,14 @@ def get_model_cfg(config):
                 in_channels=[192, 384, 768, 1536],
                 in_index=[0, 1, 2, 3],
                 pool_scales=(1, 2, 3, 6),
-                channels=768,
-                dropout_ratio=0.1,
+                channels=768, ## 768
+                dropout_ratio=0.3,
                 num_classes=config["num_classes"],
                 norm_cfg=norm_cfg,
                 align_corners=False,
                 loss_decode=dict(
                     type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
-            # auxiliary_head=dict(
-            #     type='FCNHead',
-            #     in_channels=768,
-            #     in_index=2,
-            #     channels=256,
-            #     num_convs=1,
-            #     concat_input=False,
-            #     dropout_ratio=0.1,
-            #     num_classes=config["num_classes"],
-            #     norm_cfg=norm_cfg,
-            #     align_corners=False,
-            #     loss_decode=dict(
-            #         type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
-            # model training and testing settings
-            train_cfg=dict(),
-            test_cfg=dict(mode='whole'))
+            train_cfg=dict())
         
     elif config["model"].lower() == "metaformer":
         norm_cfg = dict(type='BN', requires_grad=True)
@@ -106,14 +91,12 @@ def get_model_cfg(config):
                 drop_rate=0.,
                 drop_path_rate=0.,
                 out_indices=(0, 2, 4, 6),
-                frozen_stages=0)
-                ,
+                frozen_stages=0),
             neck=dict(
                 type='FPN',
                 in_channels=[96, 192, 384, 768],
                 out_channels=256,
                 num_outs=4),
-
             decode_head=dict(
                 type='FPNHead',
                 in_channels=[256, 256, 256, 256],
@@ -126,9 +109,6 @@ def get_model_cfg(config):
                 align_corners=False,
                 loss_decode=dict(type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
             # model training and testing settings
-            train_cfg=dict(),
-            test_cfg=dict(mode='whole'))
+            train_cfg=dict())
 
-
-        
     return model_cfg

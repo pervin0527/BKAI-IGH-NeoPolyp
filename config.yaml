@@ -9,10 +9,10 @@ test: "test"
 
 ## hyp-params
 num_classes: 3
-model: "segformer"
-epochs: 300
+model: "swin_transformer"
+epochs: 200
 img_size: 512
-batch_size: 8
+batch_size: 4
 init_lr: 0.0001
 early_stop: 30
 
@@ -21,4 +21,4 @@ gamma: 2
 
 ## augmentation
 spatial_alpha: 0.45 ## 0.45
-mixup_alpha: 0.6
+mixup_alpha: 0.5

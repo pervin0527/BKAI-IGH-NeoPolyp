@@ -8,7 +8,7 @@ from glob import glob
 from torch.utils.data import Dataset
 from albumentations.pytorch import ToTensorV2
 
-from data.data_preprocess import load_img_mask, encode_mask, train_img_mask_transform, mosaic_augmentation, spatially_exclusive_pasting, mixup
+from data.data_preprocess import load_img_mask, encode_mask, train_img_mask_transform, mosaic_augmentation, spatially_exclusive_pasting, get_bg_image, mixup
 
 class BKAIDataset(Dataset):
     def __init__(self, config):
@@ -30,10 +30,10 @@ class BKAIDataset(Dataset):
                                           A.RandomGamma (gamma_limit=(70, 130), eps=None, always_apply=False, p=0.2),
                                           A.RGBShift(p=0.3, r_shift_limit=10, g_shift_limit=10, b_shift_limit=10),
                                           A.OneOf([A.Blur(), A.GaussianBlur(), A.GlassBlur(), A.MotionBlur(), A.GaussNoise(), A.Sharpen(), A.MedianBlur(), A.MultiplicativeNoise()]),
-                                          A.Cutout(p=0.2, max_h_size=35, max_w_size=35, fill_value=255),
+                                          A.CoarseDropout(p=0.2, max_height=35, max_width=35, fill_value=255, mask_fill_value=0),
                                           A.RandomSnow(snow_point_lower=0.1, snow_point_upper=0.15, brightness_coeff=1.5, p=0.09),
                                           A.RandomShadow(p=0.1),
-                                          A.ShiftScaleRotate(p=0.45, border_mode=cv2.BORDER_CONSTANT, shift_limit=0.15, scale_limit=0.15),
+                                          A.ShiftScaleRotate(p=0.45, border_mode=cv2.BORDER_CONSTANT, shift_limit=0.15, scale_limit=0.15, rotate_limit=180),
                                           A.RandomCrop(self.img_size, self.img_size)])
         
         self.batch_transform = A.Compose([A.Normalize(mean=(0.485, 0.456, 0.406),std=(0.229, 0.224, 0.225)),
@@ -54,6 +54,11 @@ class BKAIDataset(Dataset):
             image, mask = load_img_mask(image_path, mask_path, size=self.img_size)
 
             augment_image, augment_mask = train_img_mask_transform(self.train_transform, image, mask)
+            
+            if random.random() > 0.7:
+                background_image = get_bg_image(self.background_files)
+                augment_image = mixup(augment_image, background_image, alpha=random.uniform(self.mixup_alpha, self.mixup_alpha + 0.3))
+
 
         elif 0.3 < prob <= 0.6:
             piecies = []
@@ -62,6 +67,11 @@ class BKAIDataset(Dataset):
                 image_path, mask_path = self.total_files[i]
                 image, mask = load_img_mask(image_path, mask_path, size=self.img_size)
                 piece_image, piece_mask = train_img_mask_transform(self.train_transform, image, mask)
+
+                if random.random() > 0.7:
+                    background_image = get_bg_image(self.background_files)
+                    piece_image = mixup(piece_image, background_image, alpha=random.uniform(self.mixup_alpha, self.mixup_alpha + 0.3))
+
                 piecies.append([piece_image, piece_mask])
 
             augment_image, augment_mask = mosaic_augmentation(piecies, size=self.img_size)
@@ -72,17 +82,16 @@ class BKAIDataset(Dataset):
             image, mask = load_img_mask(image_path, mask_path, size=self.img_size)
             augment_image, augment_mask = spatially_exclusive_pasting(image, mask, alpha=random.uniform(self.spatial_alpha, self.spatial_alpha + 0.2))
 
-        if random.random() > 0.7:
-            bg_idx = random.randint(0, len(self.background_files) - 1)
-            background_image = cv2.imread(self.background_files[bg_idx])
-            background_image = cv2.cvtColor(background_image, cv2.COLOR_BGR2RGB)
-            augment_image = mixup(augment_image, background_image, alpha=random.uniform(self.mixup_alpha, self.mixup_alpha + 0.2))
+            if random.random() > 0.7:
+                background_image = get_bg_image(self.background_files)
+                augment_image = mixup(augment_image, background_image, alpha=random.uniform(self.mixup_alpha, self.mixup_alpha + 0.3))
 
         encoded_mask = encode_mask(augment_mask)
         batch_image, batch_mask = train_img_mask_transform(self.batch_transform, augment_image, encoded_mask)
 
         return batch_image, batch_mask
-    
+
+
 if __name__ == "__main__":
     import yaml
     from torch.utils.data import DataLoader

@@ -185,3 +185,11 @@ def mixup(foreground_image, background_image, alpha):
     mixed_image = cv2.addWeighted(image1, alpha, transformed_image, 1 - alpha, 0)   
     
     return mixed_image
+
+
+def get_bg_image(bg_files):
+    bg_idx = random.randint(0, len(bg_files) - 1)
+    background_image = cv2.imread(bg_files[bg_idx])
+    background_image = cv2.cvtColor(background_image, cv2.COLOR_BGR2RGB)
+
+    return background_image
