@@ -227,6 +227,7 @@ def spatially_exclusive_pasting(image, mask, alpha=0.7, iterations=10):
     for cls, bboxes in bounding_boxes.items():
         for idx, bbox in enumerate(bboxes):
             xmin, ymin, xmax, ymax = bbox[0], bbox[1], bbox[2], bbox[3]
+
             Lf_gray = L_gray[ymin:ymax, xmin:xmax]
             If = target_image[ymin:ymax, xmin:xmax]
             Lf_color = target_mask[ymin:ymax, xmin:xmax]

@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
     ## Loss & Optimizer
     criterion = FocalLoss_Ori(num_class=config["num_classes"], alpha=config["alpha"], gamma=config["gamma"])
-    optimizer = torch.optim.Adam(model.parameters(), lr=config["init_lr"])
+    optimizer = torch.optim.Adam(model.parameters(), lr=config["init_lr"], weight_decay=config["weight_decay"])
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=len(train_dataloader) * config["epochs"], eta_min=config["init_lr"] / 100)
 
     ## Meter

@@ -66,7 +66,11 @@ class BKAIDataset(Dataset):
                 i = random.randint(0, len(self.total_files)-1)
                 image_path, mask_path = self.total_files[i]
                 image, mask = load_img_mask(image_path, mask_path, size=self.img_size)
-                piece_image, piece_mask = train_img_mask_transform(self.train_transform, image, mask)
+
+                if random.random() > 0.5:
+                    piece_image, piece_mask = train_img_mask_transform(self.train_transform, image, mask)
+                else:
+                    piece_image, piece_mask = spatially_exclusive_pasting(image, mask, alpha=random.uniform(self.spatial_alpha, self.spatial_alpha + 0.2))
 
                 if random.random() > 0.7:
                     background_image = get_bg_image(self.background_files)

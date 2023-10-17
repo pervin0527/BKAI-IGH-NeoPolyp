@@ -24,8 +24,8 @@ def get_model_cfg(config):
                 type='SegformerHead',
                 in_channels=[64, 128, 320, 512],
                 in_index=[0, 1, 2, 3],
-                channels=768, ## 256 
-                dropout_ratio=0.3,
+                channels=config["decoder_dim"], ## 256, 768
+                dropout_ratio=config["dropout_prob"],
                 num_classes=config["num_classes"],
                 norm_cfg=norm_cfg,
                 align_corners=False,
@@ -65,8 +65,8 @@ def get_model_cfg(config):
                 in_channels=[192, 384, 768, 1536],
                 in_index=[0, 1, 2, 3],
                 pool_scales=(1, 2, 3, 6),
-                channels=768, ## 768
-                dropout_ratio=0.3,
+                channels=config["decoder_dim"], ## 768
+                dropout_ratio=config["dropout_prob"],
                 num_classes=config["num_classes"],
                 norm_cfg=norm_cfg,
                 align_corners=False,
@@ -81,7 +81,7 @@ def get_model_cfg(config):
             backbone=dict(
                 type='mmpretrain.PoolFormer',
                 arch='m48',
-                init_cfg=dict(type='Pretrained', checkpoint="./pretrained_models/fpn_poolformer_m48_8x4_512x512_40k_ade20k_20220504_003923-64168d3b.pth", prefix='backbone.'),
+                init_cfg=dict(type='Pretrained', checkpoint="./pretrained_models/poolformer_m48.pth.tar"),
                 in_patch_size=7,
                 in_stride=4,
                 in_pad=2,
@@ -102,13 +102,12 @@ def get_model_cfg(config):
                 in_channels=[256, 256, 256, 256],
                 in_index=[0, 1, 2, 3],
                 feature_strides=[4, 8, 16, 32],
-                channels=128,
-                dropout_ratio=0.,
+                channels=config["decoder_dim"],
+                dropout_ratio=config["dropout_prob"],
                 num_classes=config["num_classes"],
                 norm_cfg=norm_cfg,
                 align_corners=False,
                 loss_decode=dict(type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0)),
-            # model training and testing settings
             train_cfg=dict())
 
     return model_cfg
