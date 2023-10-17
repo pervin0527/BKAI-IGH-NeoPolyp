@@ -125,48 +125,48 @@ def cutmix_augmentation(image1, mask1, image2, mask2):
     return i1, m1
 
 
-def spatially_exclusive_pasting(image, mask, alpha=0.7, iterations=10):
-    target_image, target_mask = copy.deepcopy(image), copy.deepcopy(mask)
-    L_gray = cv2.cvtColor(target_mask, cv2.COLOR_BGR2GRAY)
+# def spatially_exclusive_pasting(image, mask, alpha=0.7, iterations=10):
+#     target_image, target_mask = copy.deepcopy(image), copy.deepcopy(mask)
+#     L_gray = cv2.cvtColor(target_mask, cv2.COLOR_BGR2GRAY)
 
-    hs, ws = np.where(L_gray == 1)
-    if not hs.any() or not ws.any():
-        return target_mask
+#     hs, ws = np.where(L_gray == 1)
+#     if not hs.any() or not ws.any():
+#         return target_mask
 
-    he, we = hs.max(), ws.max()
-    hs, ws = hs.min(), ws.min()
+#     he, we = hs.max(), ws.max()
+#     hs, ws = hs.min(), ws.min()
     
-    Lf_gray = L_gray[hs:he, ws:we]
-    If = target_image[hs:he, ws:we]
-    Lf_color = target_mask[hs:he, ws:we]
+#     Lf_gray = L_gray[hs:he, ws:we]
+#     If = target_image[hs:he, ws:we]
+#     Lf_color = target_mask[hs:he, ws:we]
     
-    M = np.random.rand(*target_image.shape[:2])
-    M[L_gray == 1] = float('inf')
+#     M = np.random.rand(*target_image.shape[:2])
+#     M[L_gray == 1] = float('inf')
     
-    height, width = he - hs, we - ws
+#     height, width = he - hs, we - ws
 
-    for _ in range(iterations):
-        px, py = np.unravel_index(M.argmin(), M.shape)        
-        candidate_area = (slice(px, px + height), slice(py, py + width))
+#     for _ in range(iterations):
+#         px, py = np.unravel_index(M.argmin(), M.shape)        
+#         candidate_area = (slice(px, px + height), slice(py, py + width))
         
-        if candidate_area[0].stop > target_image.shape[0] or candidate_area[1].stop > target_image.shape[1]:
-            M[px, py] = float('inf')
-            continue
+#         if candidate_area[0].stop > target_image.shape[0] or candidate_area[1].stop > target_image.shape[1]:
+#             M[px, py] = float('inf')
+#             continue
         
-        if np.any(L_gray[candidate_area] & Lf_gray):
-            M[candidate_area] = float('inf')
-            continue
+#         if np.any(L_gray[candidate_area] & Lf_gray):
+#             M[candidate_area] = float('inf')
+#             continue
         
-        target_image[candidate_area] = alpha * target_image[candidate_area] + (1 - alpha) * If
-        target_mask[candidate_area] = alpha * target_mask[candidate_area] + (1 - alpha) * Lf_color
-        L_gray[candidate_area] = cv2.cvtColor(target_mask[candidate_area], cv2.COLOR_BGR2GRAY)
+#         target_image[candidate_area] = alpha * target_image[candidate_area] + (1 - alpha) * If
+#         target_mask[candidate_area] = alpha * target_mask[candidate_area] + (1 - alpha) * Lf_color
+#         L_gray[candidate_area] = cv2.cvtColor(target_mask[candidate_area], cv2.COLOR_BGR2GRAY)
         
-        M[candidate_area] = float('inf')
+#         M[candidate_area] = float('inf')
         
-        kernel = np.ones((3, 3), np.float32) / 9
-        M = cv2.filter2D(M, -1, kernel)
+#         kernel = np.ones((3, 3), np.float32) / 9
+#         M = cv2.filter2D(M, -1, kernel)
 
-    return target_image, target_mask
+#     return target_image, target_mask
 
 
 def mixup(foreground_image, background_image, alpha):
@@ -193,3 +193,68 @@ def get_bg_image(bg_files):
     background_image = cv2.cvtColor(background_image, cv2.COLOR_BGR2RGB)
 
     return background_image
+
+
+def get_bounding_boxes_for_classes(encoded_mask):
+    classes = [1, 2]
+    bounding_boxes_dict = {}
+
+    for cls in classes:
+        binary_mask = (encoded_mask == cls).astype(np.uint8)
+        contours, _ = cv2.findContours(binary_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        bounding_boxes = []
+        for contour in contours:
+            x, y, w, h = cv2.boundingRect(contour)
+            xmin = x
+            ymin = y
+            xmax = x + w
+            ymax = y + h
+            bounding_boxes.append((xmin, ymin, xmax, ymax))
+        
+        bounding_boxes_dict[cls] = bounding_boxes
+    
+    return bounding_boxes_dict
+
+
+def spatially_exclusive_pasting(image, mask, alpha=0.7, iterations=10):    
+    target_image, target_mask = copy.deepcopy(image), copy.deepcopy(mask)
+    L_gray = cv2.cvtColor(target_mask, cv2.COLOR_BGR2GRAY)
+    
+    encoded_mask = encode_mask(mask)
+    bounding_boxes = get_bounding_boxes_for_classes(encoded_mask)
+    
+    for cls, bboxes in bounding_boxes.items():
+        for idx, bbox in enumerate(bboxes):
+            xmin, ymin, xmax, ymax = bbox[0], bbox[1], bbox[2], bbox[3]
+            Lf_gray = L_gray[ymin:ymax, xmin:xmax]
+            If = target_image[ymin:ymax, xmin:xmax]
+            Lf_color = target_mask[ymin:ymax, xmin:xmax]
+
+            M = np.random.rand(*target_image.shape[:2])
+            M[L_gray == 1] = float('inf')
+            
+            height, width = ymax - ymin, xmax - xmin
+            
+            for _ in range(iterations):
+                px, py = np.unravel_index(M.argmin(), M.shape)        
+                candidate_area = (slice(px, px + height), slice(py, py + width))
+                
+                if candidate_area[0].stop > target_image.shape[0] or candidate_area[1].stop > target_image.shape[1]:
+                    M[px, py] = float('inf')
+                    continue
+                
+                if np.any(L_gray[candidate_area] & Lf_gray):
+                    M[candidate_area] = float('inf')
+                    continue
+                
+                target_image[candidate_area] = alpha * target_image[candidate_area] + (1 - alpha) * If
+                target_mask[candidate_area] = alpha * target_mask[candidate_area] + (1 - alpha) * Lf_color
+                L_gray[candidate_area] = cv2.cvtColor(target_mask[candidate_area], cv2.COLOR_BGR2GRAY)
+                
+                M[candidate_area] = float('inf')
+                
+                kernel = np.ones((3, 3), np.float32) / 9
+                M = cv2.filter2D(M, -1, kernel)
+
+    return target_image, target_mask
