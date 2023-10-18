@@ -9,13 +9,13 @@ test: "test"
 
 ## hyp-params
 num_classes: 3
-model: "metaformer"
+model: "swin_transformer"
 epochs: 200
 img_size: 512
 batch_size: 4
 
 init_lr: 0.0001
-weight_decay: 0.04
+weight_decay: 0.01
 
 decoder_dim: 768
 dropout_prob: 0.3
