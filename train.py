@@ -33,7 +33,12 @@ if __name__ == "__main__":
 
     ## Model
     model = build_segmentor(get_model_cfg(config)).to(device)
-    model.init_weights()
+    
+    if config["weight_dir"] == "":
+        model.init_weights()
+    else:
+        model.load_state_dict(torch.load(config["weight_dir"]), strict=False)
+
     os.system("clear")
 
     ## Loss & Optimizer

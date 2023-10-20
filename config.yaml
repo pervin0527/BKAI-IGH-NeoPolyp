@@ -10,15 +10,15 @@ test: "test"
 ## hyp-params
 num_classes: 3
 model: "swin_transformer"
-epochs: 200
+epochs: 100
 img_size: 512
 batch_size: 4
 
 init_lr: 0.0001
 weight_decay: 0.01
 
-decoder_dim: 768
-dropout_prob: 0.3
+decoder_dim: 968
+dropout_prob: 0.5
 
 alpha: null ## [0.006248079459464449, 0.867032189947176, 0.12671973059335967]
 gamma: 2
