@@ -1,6 +1,6 @@
 ## dirs
 data_dir: "/home/pervinco/Datasets/BKAI_IGH_NeoPolyp"
-background_dir: "/home/pervinco/Datasets/background/train/1_ulcerative_colitis"
+background_dir: "/home/pervinco/Datasets/background"
 weight_dir: ""
 save_dir: "./runs"
 train: "train"
@@ -10,15 +10,15 @@ test: "test"
 ## hyp-params
 num_classes: 3
 model: "swin_transformer"
-epochs: 100
+epochs: 200
 img_size: 512
 batch_size: 4
 
 init_lr: 0.0001
 weight_decay: 0.01
 
-decoder_dim: 968
-dropout_prob: 0.5
+decoder_dim: 768
+dropout_prob: 0.45
 
 alpha: null ## [0.006248079459464449, 0.867032189947176, 0.12671973059335967]
 gamma: 2
@@ -27,4 +27,4 @@ early_stop: 30
 
 ## augmentation
 spatial_alpha: 0.45 ## 0.45
-mixup_alpha: 0.6
+mixup_alpha: 0.5 ## 0.6

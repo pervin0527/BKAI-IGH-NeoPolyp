@@ -217,7 +217,12 @@ def get_bounding_boxes_for_classes(encoded_mask):
     return bounding_boxes_dict
 
 
-def spatially_exclusive_pasting(image, mask, alpha=0.7, iterations=10):    
+def spatially_exclusive_pasting(image, mask, alpha=0.7, iterations=10):
+    augmentation = A.Compose([A.HorizontalFlip(p=0.5),
+                              A.RandomBrightnessContrast(p=0.3),
+                              A.Rotate(limit=30, p=0.2),
+                              A.GaussianBlur(p=0.2)])    
+
     target_image, target_mask = copy.deepcopy(image), copy.deepcopy(mask)
     L_gray = cv2.cvtColor(target_mask, cv2.COLOR_BGR2GRAY)
     
@@ -231,6 +236,11 @@ def spatially_exclusive_pasting(image, mask, alpha=0.7, iterations=10):
             Lf_gray = L_gray[ymin:ymax, xmin:xmax]
             If = target_image[ymin:ymax, xmin:xmax]
             Lf_color = target_mask[ymin:ymax, xmin:xmax]
+
+            # Augmentation
+            augmented = augmentation(image=If, mask=Lf_color)
+            If_augmented = augmented['image']
+            Lf_color_augmented = augmented['mask']
 
             M = np.random.rand(*target_image.shape[:2])
             M[L_gray == 1] = float('inf')
@@ -249,8 +259,8 @@ def spatially_exclusive_pasting(image, mask, alpha=0.7, iterations=10):
                     M[candidate_area] = float('inf')
                     continue
                 
-                target_image[candidate_area] = alpha * target_image[candidate_area] + (1 - alpha) * If
-                target_mask[candidate_area] = alpha * target_mask[candidate_area] + (1 - alpha) * Lf_color
+                target_image[candidate_area] = alpha * target_image[candidate_area] + (1 - alpha) * If_augmented
+                target_mask[candidate_area] = alpha * target_mask[candidate_area] + (1 - alpha) * Lf_color_augmented
                 L_gray[candidate_area] = cv2.cvtColor(target_mask[candidate_area], cv2.COLOR_BGR2GRAY)
                 
                 M[candidate_area] = float('inf')

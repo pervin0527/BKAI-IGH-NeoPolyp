@@ -1,7 +1,5 @@
 import cv2
-import torch
 import random
-import numpy as np
 import albumentations as A
 
 from glob import glob
@@ -40,7 +38,12 @@ class BKAIDataset(Dataset):
                                           ToTensorV2()])
         
         self.background_dir = config["background_dir"]
-        self.background_files = sorted(glob(f"{self.background_dir}/*"))
+        # self.background_files = sorted(glob(f"{self.background_dir}/*"))
+        self.background_files = []
+        for folder in ["train", "val", "test"]:
+            files = sorted(glob(f"{self.background_dir}/{folder}/1_ulcerative_colitis/*"))
+            self.background_files.extend(files)
+
 
     def __len__(self):
         return len(self.total_files)
@@ -88,7 +91,7 @@ class BKAIDataset(Dataset):
 
             if random.random() > 0.7:
                 background_image = get_bg_image(self.background_files)
-                augment_image = mixup(augment_image, background_image, alpha=random.uniform(self.mixup_alpha, self.mixup_alpha + 0.3))
+                augment_image = mixup(augment_image, background_image, alpha=random.uniform(self.mixup_alpha, self.mixup_alpha + 0.5))
 
         encoded_mask = encode_mask(augment_mask)
         batch_image, batch_mask = train_img_mask_transform(self.batch_transform, augment_image, encoded_mask)
