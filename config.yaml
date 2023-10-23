@@ -1,7 +1,7 @@
 ## dirs
 data_dir: "/home/pervinco/Datasets/BKAI_IGH_NeoPolyp"
 background_dir: "/home/pervinco/Datasets/background"
-weight_dir: ""
+weight_dir: "/home/pervinco/BKAI-IGH-NeoPolyp/runs/2023-10-22_15-52-16/weights/best_dice_ckpt_ep_165.pth"
 save_dir: "./runs"
 train: "train"
 valid: "valid"
@@ -18,7 +18,7 @@ init_lr: 0.0001
 weight_decay: 0.01
 
 decoder_dim: 768
-dropout_prob: 0.45
+dropout_prob: 0.3
 
 alpha: null ## [0.006248079459464449, 0.867032189947176, 0.12671973059335967]
 gamma: 2
@@ -28,3 +28,4 @@ early_stop: 30
 ## augmentation
 spatial_alpha: 0.45 ## 0.45
 mixup_alpha: 0.5 ## 0.6
+num_augment: 50

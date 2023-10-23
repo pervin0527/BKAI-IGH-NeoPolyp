@@ -97,14 +97,12 @@ def apply_tta(model, image, batch_transform, num_augments=10):
             with torch.no_grad():
                 output = model.forward_dummy(input_img).squeeze(0).cpu().numpy()
 
-            # Original TTA inversion
             if isinstance(transform, A.HorizontalFlip):
                 output = np.flip(output, axis=2)
             elif isinstance(transform, A.VerticalFlip):
                 output = np.flip(output, axis=1)
-            elif isinstance(transform, A.RandomRotate90):
-                output = np.rot90(output, k=-1, axes=(1, 2))
-            # For new augmentations, additional inversions can be added if necessary.
+            elif isinstance(transform, A.Rotate):
+                output = cv2.warpAffine(output, cv2.getRotationMatrix2D((output.shape[1] / 2, output.shape[0] / 2), -45, 1), (output.shape[1], output.shape[0]))
 
             outputs_list.append(output)
 
@@ -133,7 +131,7 @@ def evaluate(config, model):
         ori_w, ori_h = ori_img.shape[0], ori_img.shape[1]
         img = cv2.resize(ori_img, (config["img_size"], config["img_size"]))
 
-        output_mask = apply_tta(model, img, batch_transform)
+        output_mask = apply_tta(model, img, batch_transform, num_augments=config["num_augment"])
         mask_rgb = mask_to_rgb(output_mask, color_dict)
         mask_rgb = cv2.resize(mask_rgb, (ori_h, ori_w))
         
@@ -158,7 +156,7 @@ if __name__ == "__main__":
     tta_transforms = [
         A.HorizontalFlip(p=0.5),
         A.VerticalFlip(p=0.5),
-        A.RandomRotate90(p=0.4),
+        A.Rotate(limit=45, p=0.4),
         A.RandomGamma(gamma_limit=(70, 130), eps=None, always_apply=False, p=0.2),
         A.RandomBrightnessContrast(p=0.5),
         A.CLAHE(p=0.4),
