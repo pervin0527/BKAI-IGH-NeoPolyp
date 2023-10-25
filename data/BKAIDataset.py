@@ -91,7 +91,7 @@ class BKAIDataset(Dataset):
 
             if random.random() > 0.7:
                 background_image = get_bg_image(self.background_files)
-                augment_image = mixup(augment_image, background_image, alpha=random.uniform(self.mixup_alpha, self.mixup_alpha + 0.5))
+                augment_image = mixup(augment_image, background_image, alpha=random.uniform(self.mixup_alpha, self.mixup_alpha + 0.3))
 
         encoded_mask = encode_mask(augment_mask)
         batch_image, batch_mask = train_img_mask_transform(self.batch_transform, augment_image, encoded_mask)
